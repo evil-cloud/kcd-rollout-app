@@ -2,10 +2,10 @@ FROM python:3.9-slim AS builder
 
 WORKDIR /app
 
-RUN groupadd -g 3000 app && useradd -m -u 10001 -g 3000 --no-log-init app
-
 COPY requirements.txt .
+
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt --timeout 120
+
 
 FROM python:3.9-slim
 

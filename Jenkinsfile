@@ -30,6 +30,7 @@ pipeline {
                         logInfo("BUILD", "Building Docker image...")
                         try {
                             sh '''
+			    export DOCKER_BUILDKIT=1
                             docker build --no-cache -t ${IMAGE_NAME}:${SHORT_SHA} .
                             docker tag ${IMAGE_NAME}:${SHORT_SHA} ${IMAGE_NAME}:latest
                             '''
