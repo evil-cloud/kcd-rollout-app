@@ -1,8 +1,6 @@
-FROM python:3.9.19-alpine AS builder
+FROM python:3.9-slim AS builder
 
 WORKDIR /app
-
-RUN apk add --no-cache build-base python3-dev
 
 COPY requirements.txt .
 
@@ -10,12 +8,11 @@ RUN pip install --index-url http://devpi-helm-devpi:3141/root/pypi/+simple/ \
                 --trusted-host devpi-helm-devpi \
                 --no-cache-dir --prefix=/install -r requirements.txt
 
-FROM python:3.9.19-alpine
+FROM python:3.9-slim
 
 WORKDIR /app
 
-RUN apk add --no-cache shadow-uidgid && \
-    addgroup -g 3000 app && adduser -u 10001 -G app -D app
+RUN groupadd -g 3000 app && useradd -m -u 10001 -g 3000 --no-log-init app
 
 COPY --from=builder /install /usr/local
 
