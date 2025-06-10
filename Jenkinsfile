@@ -25,7 +25,7 @@ pipeline {
                         try {
                             sh '''
 			                export DOCKER_BUILDKIT=1
-                            docker build -t ${IMAGE_NAME}:${SHORT_SHA} .
+                            docker build -f Dockerfile.pipeline -t ${IMAGE_NAME}:${SHORT_SHA} .
                             '''
                             logSuccess("BUILD", "Build completed.")
                         } catch (Exception e) {
