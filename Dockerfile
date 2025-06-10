@@ -4,7 +4,9 @@ WORKDIR /app
 
 COPY requirements.txt .
 
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+RUN pip install --index-url http://devpi-helm-devpi.jenkins.svc.cluster.local:3141/root/pypi/+simple/ \
+                --trusted-host devpi-helm-devpi.jenkins.svc.cluster.local \
+                --no-cache-dir --prefix=/install -r requirements.txt
 
 FROM python:3.9-slim
 
