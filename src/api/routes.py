@@ -25,8 +25,8 @@ async def get_version():
 @router.get("/api/v1/rollout/strategy", response_model=MessageResponse)
 async def hello():
     return {
-        "version": {settings.ROLLOUT_STRATEGY}, 
-        "message": {settings.ROLLOUT_MESSAGE}
+        "version": settings.ROLLOUT_STRATEGY, 
+        "message": settings.ROLLOUT_MESSAGE
     }
 
 @router.get("/api/v1/rollout/external")

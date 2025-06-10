@@ -73,7 +73,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         "status_code": 500,
         "timestamp": datetime.datetime.utcnow().isoformat(),
         "path": str(request.url),
-        "message": str(exc), 
+        "exception_details": str(exc),
         "traceback": error_traceback 
     }
 
