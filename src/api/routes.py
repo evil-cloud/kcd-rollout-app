@@ -9,18 +9,25 @@ router = APIRouter()
 
 @router.get("/health", response_model=HealthResponse)
 async def health_check():
-    return {"status": "ok", "service": "gitops-api"}
+    return {
+        "status": "ok", 
+        "service": "gitops-api"
+    }
 
 
 @router.get("/api/v1/rollout/version", response_model=VersionResponse)
 async def get_version():
-    return {"version": settings.VERSION}
+    return {
+        "version": settings.VERSION
+    }
 
 
 @router.get("/api/v1/rollout/strategy", response_model=MessageResponse)
 async def hello():
-    return {"message": f"Version: {settings.ROLLOUT_STRATEGY} utilizando Argo Rollouts!"}
-
+    return {
+        "version": {settings.ROLLOUT_STRATEGY}, 
+        "message": {settings.ROLLOUT_MESSAGE}
+    }
 
 @router.get("/api/v1/rollout/external")
 async def fetch_external_data():

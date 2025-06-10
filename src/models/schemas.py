@@ -8,4 +8,5 @@ class VersionResponse(BaseModel):
     version: str
 
 class MessageResponse(BaseModel):
+    version: str
     message: str
