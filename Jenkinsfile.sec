@@ -76,6 +76,7 @@ pipeline {
                 container('dind') {
                     script {
                         sh '''
+			docker ps
                         docker run aquasec/trivy image --server ${TRIVY_HOST} ${IMAGE_NAME}:${SHORT_SHA} --severity HIGH,CRITICAL --quiet
                         '''
                     }
