@@ -57,26 +57,14 @@ pipeline {
             }
         }
 
-        stage('Build Image') {
+        stage('Build Image and Scan') {
             steps {
                 container('dind') {
                     script {
                         sh '''
 			            export DOCKER_BUILDKIT=1
                         docker build -f Dockerfile.pipeline -t ${IMAGE_NAME}:${SHORT_SHA} .
-                        '''
-                    }
-                }
-            }
-        }
-    
 
-        stage('Security Scan') {
-            steps {
-                container('dind') {
-                    script {
-                        sh '''
-			docker ps
                         docker run aquasec/trivy image --server ${TRIVY_HOST} ${IMAGE_NAME}:${SHORT_SHA} --severity HIGH,CRITICAL --quiet
                         '''
                     }
