@@ -2,9 +2,12 @@
 pipeline {
     agent { label 'jenkins-jenkins-agent' }
     environment {
-        IMAGE_NAME      = "d4rkghost47/gitops-api"
+        IMAGE_NAME      = "d4rkghost47/gitops-api-sec"
         REGISTRY        = "https://index.docker.io/v1/"
         SHORT_SHA       = "${GIT_COMMIT[0..7]}"
+        SONAR_SOURCE    = "src"
+        SONAR_HOST      = "http://sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
+        TRIVY_HOST      = "http://trivy.trivy-system.svc.cluster.local:4954"
         TZ              = "America/Guatemala"  
     }
 
@@ -19,13 +22,46 @@ pipeline {
             }
         }
 
+        stage('Test and Analysis') {
+            parallel {
+                stage('Static Code Analysis') {
+                    steps {
+                        withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                            script {
+                                sh '''
+                                sonar-scanner \\
+                                    -Dsonar.projectKey=${SONAR_PROJECT} \\
+                                    -Dsonar.sources=${SONAR_SOURCE} \\
+                                    -Dsonar.host.url=${SONAR_HOST} \\
+                                    -Dsonar.login=$SONAR_TOKEN
+                                '''
+                            }
+                        }
+                    }
+                }
+
+                stage('Unit Tests') {
+                    steps {
+                        container('dind') {
+                            script {
+                                sh '''
+                                docker build -t ${IMAGE_NAME}-test -f docker/Dockerfile.test.pipeline .
+                                docker run --rm ${IMAGE_NAME}-test
+                                '''
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Build Image') {
             steps {
                 container('dind') {
                     script {
                         sh '''
 			            export DOCKER_BUILDKIT=1
-                        docker build -f Dockerfile.pipeline -t ${IMAGE_NAME}:${SHORT_SHA} .
+                        docker build -f docker/Dockerfile.pipeline -t ${IMAGE_NAME}:${SHORT_SHA} .
                         '''
                     }
                 }
