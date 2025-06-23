@@ -5,7 +5,7 @@ pipeline {
         IMAGE_NAME      = "d4rkghost47/gitops-api-sec"
         REGISTRY        = "https://index.docker.io/v1/"
         SHORT_SHA       = "${GIT_COMMIT[0..7]}"
-	SONAR_PROJECT   = "gitops-api-sec"
+        SONAR_PROJECT   = "gitops-api-sec"
         SONAR_SOURCE    = "src"
         SONAR_HOST      = "http://sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
         TRIVY_HOST      = "http://trivy.trivy-system.svc.cluster.local:4954"
@@ -28,15 +28,13 @@ pipeline {
                 stage('Static Code Analysis') {
                     steps {
                         withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                            script {
-                                sh '''
-                                sonar-scanner \\
-                                    -Dsonar.projectKey=${SONAR_PROJECT} \\
-                                    -Dsonar.sources=${SONAR_SOURCE} \\
-                                    -Dsonar.host.url=${SONAR_HOST} \\
-                                    -Dsonar.login=$SONAR_TOKEN
-                                '''
-                            }
+                            sh '''
+                            sonar-scanner \\
+                                -Dsonar.projectKey=${SONAR_PROJECT} \\
+                                -Dsonar.sources=${SONAR_SOURCE} \\
+                                -Dsonar.host.url=${SONAR_HOST} \\
+                                -Dsonar.login=$SONAR_TOKEN
+                            '''
                         }
                     }
                 }
@@ -44,12 +42,10 @@ pipeline {
                 stage('Unit Tests') {
                     steps {
                         container('dind') {
-                            script {
-                                sh '''
-                                docker build -t ${IMAGE_NAME}-test -f docker/Dockerfile.test.pipeline .
-                                docker run --rm ${IMAGE_NAME}-test
-                                '''
-                            }
+                            sh '''
+                            docker build -t ${IMAGE_NAME}-test -f docker/Dockerfile.test.pipeline .
+                            docker run --rm ${IMAGE_NAME}-test
+                            '''
                         }
                     }
                 }
@@ -59,12 +55,10 @@ pipeline {
         stage('Build Image') {
             steps {
                 container('dind') {
-                    script {
-                        sh '''
-			            export DOCKER_BUILDKIT=1
-                        docker build -f docker/Dockerfile.pipeline -t ${IMAGE_NAME}:${SHORT_SHA} .
-                        '''
-                    }
+                    sh '''
+                    export DOCKER_BUILDKIT=1
+                    docker build -f docker/Dockerfile.pipeline -t ${IMAGE_NAME}:${SHORT_SHA} .
+                    '''
                 }
             }
         }
@@ -72,15 +66,21 @@ pipeline {
         stage('Push Image') {
             steps {
                 container('dind') {
-                    script {
-                        withCredentials([string(credentialsId: 'docker-token', variable: 'DOCKER_TOKEN')]) {
-                            sh '''
-                            echo "$DOCKER_TOKEN" | docker login -u "d4rkghost47" --password-stdin > /dev/null 2>&1
-                            docker push ${IMAGE_NAME}:${SHORT_SHA}
-                            '''
-                        }
+                    withCredentials([string(credentialsId: 'docker-token', variable: 'DOCKER_TOKEN')]) {
+                        sh '''
+                        echo "$DOCKER_TOKEN" | docker login -u "d4rkghost47" --password-stdin > /dev/null 2>&1
+                        docker push ${IMAGE_NAME}:${SHORT_SHA}
+                        '''
                     }
                 }
+            }
+        }
+
+        stage('Scan Image') {
+            steps {
+                sh '''
+                trivy image --server ${TRIVY_HOST} ${IMAGE_NAME}:${SHORT_SHA} --severity HIGH,CRITICAL --quiet
+                '''
             }
         }
     }
