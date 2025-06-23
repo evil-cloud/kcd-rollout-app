@@ -5,6 +5,7 @@ pipeline {
         IMAGE_NAME      = "d4rkghost47/gitops-api-sec"
         REGISTRY        = "https://index.docker.io/v1/"
         SHORT_SHA       = "${GIT_COMMIT[0..7]}"
+	SONAR_PROJECT   = "gitops-api-sec"
         SONAR_SOURCE    = "src"
         SONAR_HOST      = "http://sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
         TRIVY_HOST      = "http://trivy.trivy-system.svc.cluster.local:4954"
